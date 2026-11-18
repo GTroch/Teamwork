@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teamwerk – Paare & Gruppen für die Klasse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fbf6ec; --ink:#2b2a33; --muted:#6f6a63; --line:#e6dccb;
+    --card:#ffffff; --accent:#3d5af1; --accent-soft:#e7ebff;
+    --m:#1f8a8a; --m-soft:#dff3f1; --w:#e0662f; --w-soft:#fde8dc; --d:#7a5bc7; --d-soft:#ece6fa;
+    --ok:#2e9e5b; --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:Nunito,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.45;
+    background-image:radial-gradient(#e9dfcc 1px,transparent 1px);background-size:22px 22px}
+  h1,h2,h3{font-family:Fredoka,Nunito,sans-serif;margin:0;letter-spacing:.2px}
+  button{font:inherit;cursor:pointer}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+
+  header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .logo{width:52px;height:52px;flex:none}
+  header.top h1{font-size:30px}
+  header.top p{margin:2px 0 0;color:var(--muted)}
+  .privacy{margin-left:auto;font-size:13px;color:var(--muted);background:#fff;border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+
+  nav.steps{display:flex;gap:8px;margin:8px 0 20px;flex-wrap:wrap}
+  nav.steps button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:9px 18px;font-weight:800;color:var(--muted);display:flex;gap:8px;align-items:center}
+  nav.steps button .n{width:24px;height:24px;border-radius:50%;background:var(--line);color:var(--ink);display:grid;place-items:center;font-size:13px}
+  nav.steps button.active{border-color:var(--ink);color:var(--ink)}
+  nav.steps button.active .n{background:var(--ink);color:#fff}
+  nav.steps button:disabled{opacity:.45;cursor:not-allowed}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:0 2px 0 var(--line)}
+  .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px}
+  @media (max-width:880px){.grid2{grid-template-columns:1fr}}
+  .panel h2{font-size:21px;margin-bottom:10px}
+  .hint{color:var(--muted);font-size:14px}
+
+  .drop{border:2.5px dashed #cdbfa6;border-radius:14px;padding:26px 16px;text-align:center;background:#fffdf8;transition:.15s}
+  .drop.over{border-color:var(--accent);background:var(--accent-soft)}
+  .drop strong{display:block;font-family:Fredoka;font-size:19px;margin-bottom:4px}
+  .btn{border:none;border-radius:12px;padding:10px 16px;font-weight:800;background:var(--ink);color:#fff;display:inline-flex;align-items:center;gap:8px}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line)}
+  .btn.accent{background:var(--accent)}
+  .btn.big{font-size:18px;padding:14px 22px;border-radius:14px}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input[type=text],input[type=number],select,textarea{font:inherit;border:2px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;color:var(--ink)}
+  textarea{width:100%;min-height:90px;resize:vertical}
+  pre.tpl{background:#f6f1e6;border-radius:10px;padding:10px 12px;font-size:13px;margin:8px 0;overflow:auto}
+  details summary{cursor:pointer;font-weight:700;margin-top:12px}
+
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px}
+  .stat{padding:6px 12px;border-radius:999px;font-weight:800;font-size:14px}
+  .stat.m{background:var(--m-soft);color:var(--m)} .stat.w{background:var(--w-soft);color:var(--w)} .stat.d{background:var(--d-soft);color:var(--d)} .stat.all{background:#efe9dd}
+  .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:8px;max-height:430px;overflow:auto;padding:2px}
+  .stu{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:6px 8px;background:#fff}
+  .stu.absent{opacity:.42;background:#f4f0e8}
+  .stu .nm{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chip{border:none;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:800;min-width:66px}
+  .chip.m{background:var(--m-soft);color:var(--m)} .chip.w{background:var(--w-soft);color:var(--w)} .chip.d{background:var(--d-soft);color:var(--d)}
+  .icon-btn{border:none;background:transparent;color:var(--muted);font-size:15px;padding:2px 4px;border-radius:6px}
+  .icon-btn:hover{background:#f1ebdf;color:var(--ink)}
+  .empty{padding:30px;text-align:center;color:var(--muted)}
+
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:16px}
+  .opt h3{font-size:16px;margin-bottom:8px}
+  .seg{display:flex;background:#f2ece1;border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap}
+  .seg button{flex:1;border:none;background:transparent;border-radius:9px;padding:8px 10px;font-weight:800;color:var(--muted);white-space:nowrap}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+  .summary{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  .badge{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:14px}
+  .badge b{font-family:Fredoka;font-size:18px;margin-right:4px}
+
+  .teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .team{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px;position:relative;animation:pop .35s both;box-shadow:0 3px 0 var(--line)}
+  @keyframes pop{from{transform:translateY(10px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+  .team .no{position:absolute;top:-10px;left:14px;background:var(--ink);color:#fff;border-radius:999px;padding:2px 10px;font-family:Fredoka;font-size:14px}
+  .team .mixed{position:absolute;top:-10px;right:12px;background:var(--ok);color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:800}
+  .team .new{background:var(--accent)}
+  .members{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+  .mem{font-family:Fredoka;font-size:20px;padding:5px 12px;border-radius:10px;display:flex;align-items:center;gap:8px;cursor:grab;user-select:none}
+  .mem.m{background:var(--m-soft);color:#125e5e} .mem.w{background:var(--w-soft);color:#9a3c12} .mem.d{background:var(--d-soft);color:#4e3496}
+  .mem.sel{outline:3px solid var(--accent)}
+  .task{border-top:2px dashed var(--line);padding-top:10px;font-size:14px}
+  .task .cat{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:800;color:var(--muted)}
+  .task .tt{font-weight:800;font-size:15px;margin:2px 0}
+  .task ul{margin:6px 0 0;padding-left:18px}
+  .task .reroll{float:right}
+  .swaphint{background:var(--accent-soft);color:#24359c;border-radius:10px;padding:8px 12px;font-size:14px;margin-bottom:12px;display:none}
+  .swaphint.show{display:block}
+
+  /* Bühne */
+  .stage{position:fixed;inset:0;background:#1d1c27;color:#fff;z-index:50;display:none;flex-direction:column;padding:22px 26px}
+  .stage.show{display:flex}
+  .stage .bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .stage .bar h2{font-size:20px;color:#cfc9ff}
+  .stage .dots{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .stage .dot{width:28px;height:28px;border-radius:50%;border:2px solid #4a4860;background:transparent;color:#bbb;font-size:12px;font-weight:800}
+  .stage .dot.cur{border-color:#fff;color:#fff}
+  .stage .dot.done{background:var(--ok);border-color:var(--ok);color:#fff}
+  .stage .main{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:safe center;text-align:center;gap:14px;overflow:auto;padding:12px 0}
+  .stage .names{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center}
+  .stage .nm{font-family:Fredoka;font-size:clamp(28px,min(5vw,7vh),64px);padding:6px 22px;border-radius:22px}
+  .stage .nm.m{background:var(--m)} .stage .nm.w{background:var(--w)} .stage .nm.d{background:var(--d)}
+  .stage .amp{font-family:Fredoka;font-size:40px;color:#8d89a8}
+  .stage .stask{max-width:900px;font-size:clamp(18px,2.2vw,26px);color:#e9e6ff}
+  .stage .stask .tt{font-family:Fredoka;font-size:clamp(24px,3vw,36px);color:#fff;margin-bottom:6px}
+  .stage .stask ul{text-align:left;display:inline-block;margin:8px 0 0}
+  .timer{font-family:Fredoka;font-size:clamp(40px,min(7vw,10vh),88px);line-height:1;font-variant-numeric:tabular-nums}
+  .timer.low{color:#ff8d6b}
+  .stage .ctl{flex:none;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .stage .btn.ghost{background:transparent;color:#fff;border-color:#4a4860}
+  .applause{display:flex;gap:8px;justify-content:center}
+  .applause button{font-size:30px;background:#2c2b3a;border:none;border-radius:14px;padding:6px 12px}
+  .applause button:hover{transform:scale(1.12)}
+  .float{position:fixed;font-size:42px;pointer-events:none;animation:up 1.6s ease-out forwards;z-index:60}
+  @keyframes up{to{transform:translateY(-60vh) rotate(20deg);opacity:0}}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;transition:.25s;z-index:80}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .tips{margin-top:18px}
+  .tips li{margin:4px 0}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <svg class="logo" viewBox="0 0 52 52" aria-hidden="true">
+      <circle cx="18" cy="20" r="11" fill="#1f8a8a"/><circle cx="34" cy="20" r="11" fill="#e0662f" opacity=".9"/>
+      <path d="M8 44c2-8 8-12 18-12s16 4 18 12" fill="none" stroke="#2b2a33" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>Teamwerk</h1>
+      <p>Gemischte Paare &amp; Gruppen bilden – und gemeinsam etwas auf die Bühne bringen.</p>
+    </div>
+    <span class="privacy" title="Die Klassenliste wird nirgends hochgeladen, sie bleibt in diesem Browser.">🔒 Daten bleiben in deinem Browser</span>
+  </header>
+
+  <nav class="steps">
+    <button data-step="1" class="active"><span class="n">1</span>Klasse</button>
+    <button data-step="2" id="navStep2"><span class="n">2</span>Teams bilden</button>
+    <button data-step="3" id="navStep3"><span class="n">3</span>Bühne</button>
+  </nav>
+
+  <!-- SCHRITT 1 -->
+  <section id="step1">
+    <div class="grid2">
+      <div class="panel">
+        <h2>Klassenliste laden</h2>
+        <div class="drop" id="drop">
+          <strong>CSV-Datei hierher ziehen</strong>
+          <span class="hint">oder</span><br><br>
+          <label class="btn accent">📂 Datei auswählen<input type="file" id="file" accept=".csv,.txt,text/csv" hidden></label>
+        </div>
+        <p class="hint">Erkannt werden Spalten wie <b>Name</b> bzw. <b>Vorname</b>/<b>Nachname</b> und <b>Geschlecht</b> (m/w/d, Junge/Mädchen). Trennzeichen Komma oder Semikolon – ein Export aus Excel funktioniert direkt.</p>
+        <details>
+          <summary>Beispiel für eine CSV-Datei</summary>
+          <pre class="tpl" id="tpl">Vorname;Nachname;Geschlecht
+Lena;Huber;w
+Jonas;Maier;m
+Aylin;Demir;w
+Paul;Schmid;m</pre>
+          <button class="btn ghost" id="copyTpl">📋 Vorlage kopieren</button>
+        </details>
+        <details>
+          <summary>Namen einfügen oder einzeln hinzufügen</summary>
+          <p class="hint">Eine Zeile pro Person, z.&nbsp;B. <code>Lena, w</code></p>
+          <textarea id="paste" placeholder="Lena, w&#10;Jonas, m&#10;Aylin, w"></textarea>
+          <div class="row" style="margin-top:8px"><button class="btn ghost" id="pasteBtn">➕ Übernehmen</button></div>
+          <div class="row" style="margin-top:12px">
+            <input type="text" id="addName" placeholder="Name" style="flex:1;min-width:120px">
+            <select id="addG"><option value="w">Mädchen</option><option value="m">Junge</option><option value="d">divers / k. A.</option></select>
+            <button class="btn ghost" id="addBtn">Hinzufügen</button>
+          </div>
+        </details>
+        <div class="row" style="margin-top:16px">
+          <button class="btn ghost" id="demoBtn">🧪 Beispielklasse laden</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row" style="justify-content:space-between">
+          <h2>Heute in der Klasse</h2>
+          <button class="btn ghost" id="clearBtn" title="Liste leeren">🗑 Leeren</button>
+        </div>
+        <div class="stats" id="stats"></div>
+        <p class="hint" style="margin-top:0">Klick auf das Etikett ändert das Geschlecht · Klick auf ✓ markiert Fehlende.</p>
+        <div class="roster" id="roster"></div>
+        <div class="row" style="margin-top:16px;justify-content:flex-end">
+          <button class="btn big accent" id="toStep2" disabled>Weiter: Teams bilden →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCHRITT 2 -->
+  <section id="step2" class="hidden">
+    <div class="panel">
+      <div class="opts">
+        <div class="opt">
+          <h3>Teamgröße</h3>
+          <div class="seg" id="sizeSeg">
+            <button data-v="2" class="on">Paare</button><button data-v="3">3er</button><button data-v="4">4er</button>
+          </div>
+        </div>
+        <div class="opt">
+          <h3>Zusammensetzung</h3>
+          <div class="seg" id="modeSeg">
+            <button data-v="mixed" class="on">♂♀ gemischt</button><button data-v="random">zufällig</button>
+          </div>
+        </div>
+        <div class="opt">
+          <h3>Aufgabe</h3>
+          <select id="cat" style="width:100%">
+            <option value="intro">🗣 Gegenseitig vorstellen</option>
+            <option value="show">🎭 Etwas vorführen</option>
+            <option value="team">🤝 Teamaufgabe</option>
+            <option value="mix">🎲 Bunt gemischt</option>
+            <option value="none">– ohne Aufgabe –</option>
+            <option value="own">✏️ Eigene Aufgaben</option>
+          </select>
+        </div>
+      </div>
+      <div id="ownBox" class="hidden" style="margin-bottom:14px">
+        <p class="hint" style="margin:0 0 6px">Eine Aufgabe pro Zeile – jedes Team bekommt zufällig eine davon.</p>
+        <textarea id="ownTasks" placeholder="Erklärt euch gegenseitig eine Matheaufgabe&#10;Erfindet einen Werbespot für euer Lieblingsessen"></textarea>
+      </div>
+      <div class="row">
+        <button class="btn big accent" id="genBtn">🎲 Teams auslosen</button>
+        <label class="row hint" style="gap:6px"><input type="checkbox" id="avoidRep" checked> frühere Partner möglichst vermeiden</label>
+        <span style="flex:1"></span>
+        <button class="btn ghost" id="copyTeams" disabled>📋 Als Text kopieren</button>
+        <button class="btn" id="toStage" disabled>🎬 Zur Bühne</button>
+      </div>
+      <div class="summary" id="summary"></div>
+      <div class="swaphint" id="swaphint">Tausch-Modus: Klick auf einen zweiten Namen, um die beiden zu tauschen. (Esc zum Abbrechen)</div>
+      <div class="teams" id="teams"></div>
+      <div id="teamsEmpty" class="empty">Wähle die Einstellungen und klick auf <b>Teams auslosen</b>.<br>Tipp: Ein Klick auf einen Namen und dann auf einen anderen tauscht die beiden.</div>
+    </div>
+    <div class="panel tips">
+      <h2>Damit die gemischte Zusammenarbeit gelingt</h2>
+      <ul class="hint">
+        <li><b>Zufall statt Wahl:</b> Wenn das Los entscheidet, muss sich niemand rechtfertigen, mit wem er oder sie arbeitet – das senkt die Hemmschwelle.</li>
+        <li><b>Kurz &amp; regelmäßig:</b> Lieber jede Woche 10 Minuten in neuen Paaren als einmal ein großes Projekt. Der Verlauf sorgt dafür, dass immer neue Kombinationen entstehen.</li>
+        <li><b>Erst niedrigschwellig:</b> Mit „Vorstellen“ beginnen, später zu „Vorführen“ steigern.</li>
+        <li><b>Anerkennen:</b> Auf der Bühne nach jedem Auftritt Applaus – positive Erlebnisse in gemischten Teams machen die nächste Zusammenarbeit leichter.</li>
+      </ul>
+      <div class="row" style="margin-top:8px">
+        <span class="hint" id="histInfo"></span>
+        <button class="btn ghost" id="resetHist">Verlauf zurücksetzen</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- BÜHNE -->
+<div class="stage" id="stage">
+  <div class="bar">
+    <h2 id="stageTitle">Bühne</h2>
+    <div class="dots" id="dots"></div>
+    <button class="btn ghost" id="fsBtn" title="Vollbild">⛶</button>
+    <button class="btn ghost" id="closeStage">✕ Schließen</button>
+  </div>
+  <div class="main">
+    <div class="names" id="stageNames"></div>
+    <div class="stask" id="stageTask"></div>
+    <div class="timer" id="timer">1:00</div>
+    <div class="ctl">
+      <select id="timerSel" style="background:#2c2b3a;color:#fff;border-color:#4a4860">
+        <option value="30">30 Sek.</option><option value="60" selected>1 Min.</option><option value="90">1½ Min.</option><option value="120">2 Min.</option><option value="180">3 Min.</option><option value="300">5 Min.</option>
+      </select>
+      <button class="btn accent" id="tStart">▶ Start</button>
+      <button class="btn ghost" id="tReset">↺</button>
+    </div>
+    <div class="applause" id="applause">
+      <button data-e="👏">👏</button><button data-e="⭐">⭐</button><button data-e="😂">😂</button><button data-e="❤️">❤️</button><button data-e="🎉">🎉</button>
+    </div>
+  </div>
+  <div class="ctl">
+    <button class="btn ghost big" id="prevBtn">← Zurück</button>
+    <button class="btn big" style="background:var(--ok)" id="doneBtn">✓ Geschafft &amp; weiter</button>
+    <button class="btn ghost big" id="nextBtn">Weiter →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+// ---------- Speicher (nur dieser Browser) ----------
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem('teamwerk_'+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('teamwerk_'+k, JSON.stringify(v)); }catch(e){} }
+};
+let students = LS.get('students', []);   // {name, g, present}
+let history  = LS.get('history', {});    // "A|B" -> Anzahl
+let rounds   = LS.get('rounds', 0);
+let teams = [];
+let settings = {size:2, mode:'mixed'};
+let committed = false;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const GL = {m:'Junge', w:'Mädchen', d:'divers'};
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2200); }
+function save(){ LS.set('students', students); LS.set('history', history); LS.set('rounds', rounds); }
+
+// ---------- CSV ----------
+function normG(v){
+  v = String(v||'').trim().toLowerCase();
+  if(!v) return 'd';
+  if(/^(w|weibl|weiblich|f|female|mädchen|maedchen|girl|schülerin|schuelerin|frau)\b/.test(v) || v==='w' ) return 'w';
+  if(/^(m|männl|männlich|maennlich|male|junge|j|boy|schüler|schueler|mann)\b/.test(v)) return 'm';
+  return 'd';
+}
+function parseCSV(text){
+  text = text.replace(/^﻿/, '');
+  const first = text.split(/\r?\n/)[0] || '';
+  const counts = {';':(first.match(/;/g)||[]).length, ',':(first.match(/,/g)||[]).length, '\t':(first.match(/\t/g)||[]).length};
+  const delim = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+  const rows=[]; let row=[], cell='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=c; }
+    else if(c==='"') q=true;
+    else if(c===delim && counts[delim]>0){ row.push(cell); cell=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=''; }
+    else cell+=c;
+  }
+  row.push(cell); rows.push(row);
+  return rows.map(r=>r.map(x=>x.trim())).filter(r=>r.some(x=>x));
+}
+function rowsToStudents(rows){
+  if(!rows.length) return [];
+  const h = rows[0].map(x=>x.toLowerCase());
+  const find = re => h.findIndex(x=>re.test(x));
+  let iVor = find(/vorname|first|rufname/), iNach = find(/nachname|familienname|last|surname/),
+      iName = find(/^name$|schüler|schueler|^name\b|student/), iG = find(/geschlecht|gender|sex|^m\/w|^g$|junge|mädchen/);
+  const hasHeader = iVor>=0 || iNach>=0 || iName>=0 || iG>=0;
+  let data = hasHeader ? rows.slice(1) : rows;
+  if(!hasHeader){
+    // ohne Kopfzeile: Spalte mit m/w-Werten suchen
+    const cols = Math.max(...data.map(r=>r.length));
+    for(let c=0;c<cols;c++){ const vals=data.map(r=>normG(r[c])); if(vals.filter(v=>v!=='d').length >= data.length*0.6 && data.every(r=>(r[c]||'').length<=12)){ iG=c; break; } }
+    const nameCols = [...Array(cols).keys()].filter(c=>c!==iG);
+    if(nameCols.length>=2){ iVor=nameCols[0]; iNach=nameCols[1]; } else iName=nameCols[0] ?? 0;
+  }
+  const out=[];
+  for(const r of data){
+    let name;
+    if(iVor>=0 && iNach>=0) name = [r[iVor], r[iNach]].filter(Boolean).join(' ');
+    else if(iVor>=0) name = r[iVor];
+    else if(iName>=0) name = r[iName];
+    else name = r[0];
+    if(!name) continue;
+    out.push({name:name.trim(), g: iG>=0 ? normG(r[iG]) : 'd', present:true});
+  }
+  return out;
+}
+function addStudents(list, replace){
+  if(replace) students = [];
+  const seen = new Set(students.map(s=>s.name.toLowerCase()));
+  let added=0;
+  for(const s of list){ let n=s.name, k=2; while(seen.has(n.toLowerCase())) n = s.name+' ('+(k++)+')'; seen.add(n.toLowerCase()); students.push({...s,name:n}); added++; }
+  save(); renderRoster();
+  const unk = students.filter(s=>s.g==='d').length;
+  toast(added+' Personen übernommen'+(unk&&list.length?' · bitte Geschlecht prüfen':''));
+}
+function handleFile(f){
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    let txt = r.result;
+    if(txt.includes('\uFFFD')){ // vermutlich Windows-1252 (Excel)
+      const r2=new FileReader(); r2.onload=()=>finish(r2.result); r2.readAsText(f,'windows-1252'); return;
+    }
+    finish(txt);
+  };
+  const finish = txt => { const list=rowsToStudents(parseCSV(txt)); if(!list.length){ toast('Keine Namen gefunden – Format prüfen'); return; } addStudents(list, students.length===0 || confirmReplace()); };
+  r.readAsText(f,'utf-8');
+}
+function confirmReplace(){ return true; } // neue Datei ersetzt die Liste
+const drop=$('#drop');
+['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',ev=>handleFile(ev.dataTransfer.files[0]));
+$('#file').addEventListener('change',e=>{handleFile(e.target.files[0]); e.target.value='';});
+$('#pasteBtn').onclick=()=>{
+  const lines=$('#paste').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const list=lines.map(l=>{ const p=l.split(/[;,\t]/).map(x=>x.trim()); let g='d', name=p[0];
+    if(p.length>1){ const last=p[p.length-1]; if(normG(last)!=='d' || /^d$|divers/i.test(last)){ g=normG(last); name=p.slice(0,-1).join(' ');} else name=p.join(' '); }
+    return {name,g,present:true}; });
+  if(list.length){ addStudents(list,false); $('#paste').value=''; }
+};
+$('#addBtn').onclick=()=>{ const n=$('#addName').value.trim(); if(!n) return; addStudents([{name:n,g:$('#addG').value,present:true}],false); $('#addName').value=''; $('#addName').focus(); };
+$('#addName').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#addBtn').click(); });
+$('#copyTpl').onclick=()=>copy($('#tpl').textContent,'Vorlage kopiert – in eine Textdatei einfügen und als .csv speichern');
+$('#demoBtn').onclick=()=>{
+  const g=['Lena','Aylin','Sophie','Mia','Emilia','Hanna','Zeynep','Marie','Lea','Clara','Ida','Nele'];
+  const b=['Jonas','Paul','Elias','Luca','Noah','Finn','Ben','Emir','Felix','Leon','Mats','Theo','Jakob'];
+  addStudents([...g.map(n=>({name:n,g:'w',present:true})),...b.map(n=>({name:n,g:'m',present:true}))],true);
+};
+$('#clearBtn').onclick=()=>{ if(!students.length) return; const old=students; students=[]; save(); renderRoster(); toastUndo(old); };
+function toastUndo(old){
+  const t=$('#toast'); t.innerHTML='Liste geleert · <u style="cursor:pointer">rückgängig</u>'; t.classList.add('show');
+  t.querySelector('u').onclick=()=>{ students=old; save(); renderRoster(); t.classList.remove('show'); };
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+function renderRoster(){
+  const pres = students.filter(s=>s.present);
+  const c = g => pres.filter(s=>s.g===g).length;
+  $('#stats').innerHTML = students.length ? `<span class="stat all">${pres.length} anwesend${students.length>pres.length?' / '+students.length:''}</span><span class="stat w">${c('w')} Mädchen</span><span class="stat m">${c('m')} Jungen</span>${c('d')?`<span class="stat d">${c('d')} divers / k. A.</span>`:''}` : '';
+  const ro=$('#roster');
+  if(!students.length){ ro.innerHTML='<div class="empty" style="grid-column:1/-1">Noch keine Klasse geladen.<br>Lade eine CSV-Datei oder probiere die Beispielklasse.</div>'; }
+  else ro.innerHTML = students.map((s,i)=>`<div class="stu ${s.present?'':'absent'}">
+      <button class="icon-btn" data-pres="${i}" title="${s.present?'als fehlend markieren':'wieder anwesend'}">${s.present?'✓':'✗'}</button>
+      <span class="nm" title="${esc(s.name)}">${esc(s.name)}</span>
+      <button class="chip ${s.g}" data-g="${i}">${GL[s.g]}</button>
+      <button class="icon-btn" data-del="${i}" title="entfernen">✕</button></div>`).join('');
+  $('#toStep2').disabled = pres.length<2;
+  $('#navStep2').disabled = pres.length<2;
+}
+$('#roster').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.g!==undefined){ const s=students[b.dataset.g]; s.g = {w:'m',m:'d',d:'w'}[s.g]; }
+  else if(b.dataset.pres!==undefined){ const s=students[b.dataset.pres]; s.present=!s.present; }
+  else if(b.dataset.del!==undefined){ students.splice(+b.dataset.del,1); }
+  save(); renderRoster();
+});
+
+// ---------- Navigation ----------
+function go(step){
+  ['1','2'].forEach(n=>$('#step'+n).classList.toggle('hidden', String(step)!==n));
+  document.querySelectorAll('nav.steps button').forEach(b=>b.classList.toggle('active', b.dataset.step==String(step)));
+  if(step===3) openStage();
+  if(step===2) updateHistInfo();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('nav.steps button').forEach(b=>b.onclick=()=>{ if(!b.disabled) go(+b.dataset.step); });
+$('#toStep2').onclick=()=>go(2);
+
+// ---------- Aufgaben ----------
+const QUESTIONS = [
+  'Was machst du am liebsten am Wochenende?','Welches Essen könntest du jede Woche essen?','Was kannst du richtig gut, was hier vielleicht niemand weiß?',
+  'Welche Superkraft hättest du gern – und wofür?','In welches Land würdest du gern einmal reisen?','Was war der lustigste Moment in den letzten Wochen?',
+  'Welches Tier wärst du gern für einen Tag?','Welches Lied hörst du gerade oft?','Was wolltest du als kleines Kind werden?',
+  'Welches Spiel (Brett-, Video-, Sportspiel) magst du am meisten?','Wofür könntest du stundenlang Zeit vergessen?','Was würdest du mit 100 € für die Klasse machen?',
+  'Wer ist ein Vorbild für dich – und warum?','Welches Schulfach würdest du neu erfinden?','Was ist dein Lieblingsort in deiner Stadt?',
+  'Bist du eher Frühaufsteher*in oder Nachteule?','Was ist das Beste, das du dieses Jahr gelernt hast?','Welche drei Dinge nimmst du auf eine einsame Insel mit?'
+];
+const TASKS = {
+  intro: [
+    {t:'Partner-Interview', d:'Stellt euch gegenseitig diese Fragen. Danach stellt jede*r die <b>andere</b> Person der Klasse vor: „Das ist …, sie/er …“', q:3},
+    {t:'3 Gemeinsamkeiten, 1 Unterschied', d:'Findet drei Dinge, die ihr beide gemeinsam habt, und eines, in dem ihr ganz verschieden seid. Präsentiert sie zusammen.', q:0},
+    {t:'Zwei Wahrheiten, eine Erfindung', d:'Erzählt euch je drei Dinge über euch – eines davon ist erfunden. Stellt dann eure*n Partner*in vor; die Klasse rät, was erfunden ist.', q:0},
+    {t:'Steckbrief zum Partner', d:'Befragt euch und gestaltet einen Mini-Steckbrief über die andere Person (Hobby, Lieblingsessen, Traumreise, ein Geheimtalent). Stellt ihn vor.', q:2},
+    {t:'Das wusstet ihr noch nicht', d:'Findet je eine überraschende Sache über die andere Person heraus und verratet sie der Klasse (nur, was sie/er erlaubt!).', q:2}
+  ],
+  show: [
+    {t:'Pantomime: Beruf', d:'Denkt euch gemeinsam einen Beruf aus und spielt ihn ohne Worte vor. Beide müssen mitspielen – die Klasse rät.'},
+    {t:'Standbild', d:'Baut zusammen ein „eingefrorenes Foto“ zur Szene: <b>%SZENE%</b>. Die Klasse beschreibt, was sie sieht.'},
+    {t:'Spiegel-Übung', d:'Eine Person bewegt sich langsam, die andere spiegelt jede Bewegung. Nach der Hälfte der Zeit wird gewechselt – schafft ihr es, dass man nicht erkennt, wer führt?'},
+    {t:'Werbespot', d:'Erfindet ein verrücktes Produkt und präsentiert es in einem 30-Sekunden-Werbespot. Beide haben Sprechanteile.'},
+    {t:'Reporter & Star', d:'Eine Person ist Reporter*in, die andere ein Star (Sport, Musik, Wissenschaft …). Führt ein kurzes Interview vor, danach Rollentausch.'},
+    {t:'Wetterbericht', d:'Moderiert gemeinsam den Wetterbericht für ein Fantasieland – eine*r moderiert, eine*r zeigt das Wetter mit dem Körper.'},
+    {t:'Satz für Satz', d:'Erzählt der Klasse abwechselnd eine Geschichte – jede*r sagt immer nur einen Satz. Startsatz: „%START%“'},
+    {t:'Roboter & Programmierer', d:'Eine Person ist ein Roboter, die andere gibt nur Befehle („2 Schritte vor“, „Arm heben“). Führt vor, wie der Roboter eine Aufgabe erledigt – z.&nbsp;B. eine Tafel wischt.'},
+    {t:'Gefühle-Szene', d:'Spielt eine kurze Alltagsszene (z.&nbsp;B. Busfahrt) erst <b>fröhlich</b>, dann <b>wütend</b>, dann <b>ängstlich</b>.'}
+  ],
+  team: [
+    {t:'Rücken an Rücken zeichnen', d:'Setzt euch Rücken an Rücken. Eine Person beschreibt ein einfaches Bild, die andere zeichnet es nur nach Anweisung. Vergleicht danach – dann Tausch.'},
+    {t:'Höchster Papierturm', d:'Baut aus 5 Blatt Papier (ohne Kleber) einen möglichst hohen Turm, der 10 Sekunden steht.'},
+    {t:'Gemeinsam bis 20', d:'Zählt abwechselnd bis 20 – aber wer „3“, eine Zahl mit 3 oder ein Vielfaches von 3 hat, klatscht stattdessen. Fehler? Von vorne!'},
+    {t:'Wort-Kette', d:'Bildet eine Kette aus zusammengesetzten Wörtern (Haus-Tür → Tür-Schloss → Schloss-…). Schafft ihr 10 Glieder?'},
+    {t:'Blind-Führung', d:'Eine Person schließt die Augen, die andere führt sie nur mit Worten sicher zu einem Ziel im Raum. Dann Tausch.'},
+    {t:'Das Klassen-Rätsel', d:'Denkt euch zusammen ein Rätsel über die Schule aus, das die Klasse lösen soll. Präsentiert es zu zweit.'},
+    {t:'Ein Bild – zwei Stifte', d:'Zeichnet gemeinsam ein Bild, ohne zu sprechen. Abwechselnd darf jede*r nur einen Strich machen. Gebt dem Bild am Ende einen Titel.'}
+  ]
+};
+const SZENEN=['Im Supermarkt an der Kasse','Das Tor in letzter Sekunde','Der erste Schultag','Ein Gewitter beim Picknick','Auf dem Gipfel eines Berges','Im Wartezimmer beim Zahnarzt','Die Klassenfahrt im Bus'];
+const STARTS=['Als ich heute die Tür öffnete, saß da ein Pinguin …','Plötzlich ging im ganzen Schulhaus das Licht aus …','Unser Lehrer kam heute mit einem Koffer voller …','Auf dem Weg zur Schule fand ich eine Karte …'];
+let usedTasks = {};
+function makeTask(cat){
+  if(cat==='none') return null;
+  if(cat==='own'){
+    const lines=$('#ownTasks').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    if(!lines.length) return null;
+    return {cat:'Eigene Aufgabe', t:pickFresh('own',lines), d:'', qs:[]};
+  }
+  const c = cat==='mix' ? pick(['intro','show','team']) : cat;
+  const base = pickFresh(c, TASKS[c]);
+  const qs = base.q ? shuffle(QUESTIONS).slice(0,base.q) : [];
+  return {cat:{intro:'Vorstellen',show:'Vorführen',team:'Teamaufgabe'}[c], t:base.t, d:base.d.replace('%SZENE%',pick(SZENEN)).replace('%START%',pick(STARTS)), qs};
+}
+function pickFresh(key, pool){
+  usedTasks[key] = usedTasks[key] || [];
+  let free = pool.filter(x=>!usedTasks[key].includes(x));
+  if(!free.length){ usedTasks[key]=[]; free=pool; }
+  const x = pick(free); usedTasks[key].push(x); return x;
+}
+$('#cat').onchange=()=>{ $('#ownBox').classList.toggle('hidden', $('#cat').value!=='own'); if(teams.length){ teams.forEach(t=>t.task=makeTask($('#cat').value)); renderTeams(false); } };
+
+// ---------- Teambildung ----------
+function seg(id,key){ document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); settings[key]= key==='size'?+b.dataset.v:b.dataset.v; }); }
+seg('sizeSeg','size'); seg('modeSeg','mode');
+const key=(a,b)=>[a,b].sort().join('|');
+function build(people,size,mode){
+  const n=people.length, k=Math.max(1,Math.floor(n/size));
+  let order;
+  if(mode==='mixed'){
+    const g={w:shuffle(people.filter(p=>p.g==='w')), m:shuffle(people.filter(p=>p.g==='m')), d:shuffle(people.filter(p=>p.g==='d'))};
+    // kleinere Gruppe zuerst verteilen, „divers/k. A.“ füllt zwischen auf → maximal gemischt
+    const [a,b] = g.w.length<=g.m.length ? [g.w,g.m] : [g.m,g.w];
+    order=[...a,...g.d,...b];
+  } else order=shuffle(people);
+  const groups=Array.from({length:k},()=>[]);
+  const off=Math.floor(Math.random()*k);
+  order.forEach((p,i)=>groups[(i+off)%k].push(p));
+  return shuffle(groups);
+}
+function score(groups){
+  let s=0; for(const g of groups) for(let i=0;i<g.length;i++) for(let j=i+1;j<g.length;j++) s+=(history[key(g[i].name,g[j].name)]||0);
+  return s;
+}
+function isMixed(g){ const s=new Set(g.map(p=>p.g)); return s.size>1 || s.has('d'); }
+function generate(){
+  const people=students.filter(s=>s.present);
+  if(people.length<2){ toast('Mindestens 2 anwesende Personen nötig'); return; }
+  let best=null,bs=Infinity;
+  const tries=$('#avoidRep').checked?400:1;
+  for(let t=0;t<tries;t++){ const g=build(people,settings.size,settings.mode); const sc=score(g); if(sc<bs){bs=sc;best=g;} if(sc===0) break; }
+  const cat=$('#cat').value;
+  teams=best.map(m=>({members:m,task:makeTask(cat),done:false}));
+  committed=false; renderTeams(true);
+}
+$('#genBtn').onclick=generate;
+
+let swapSel=null;
+function renderTeams(animate){
+  $('#teamsEmpty').classList.toggle('hidden', teams.length>0);
+  $('#copyTeams').disabled=$('#toStage').disabled=!teams.length;
+  $('#navStep3').disabled=!teams.length;
+  const mixedCount=teams.filter(t=>isMixed(t.members)).length;
+  const fresh=teams.filter(t=>score([t.members])===0).length;
+  $('#summary').innerHTML = teams.length ? `<span class="badge"><b>${teams.length}</b>${settings.size===2?'Paare':'Gruppen'}</span>
+    <span class="badge"><b>${mixedCount}</b>davon gemischt</span>
+    ${rounds?`<span class="badge"><b>${fresh}</b>arbeiten zum ersten Mal zusammen</span>`:''}` : '';
+  $('#teams').innerHTML = teams.map((t,i)=>{
+    const mixed=isMixed(t.members);
+    const isNew = rounds && score([t.members])===0;
+    return `<div class="team" style="animation-delay:${animate?i*60:0}ms">
+      <span class="no">${settings.size===2?'Paar':'Gruppe'} ${i+1}</span>
+      ${mixed?'<span class="mixed">gemischt</span>':''}
+      <div class="members">${t.members.map((p,j)=>`<div class="mem ${p.g} ${swapSel&&swapSel[0]===i&&swapSel[1]===j?'sel':''}" data-t="${i}" data-m="${j}">${esc(p.name)}</div>`).join('')}</div>
+      ${t.task?`<div class="task"><button class="icon-btn reroll" data-reroll="${i}" title="andere Aufgabe">🎲</button>
+        <div class="cat">${esc(t.task.cat)}</div><div class="tt">${esc(t.task.t)}</div>${t.task.d?`<div>${t.task.d}</div>`:''}
+        ${t.task.qs.length?`<ul>${t.task.qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ul>`:''}</div>`:''}
+    </div>`;}).join('');
+  if(animate) spinNames();
+}
+function spinNames(){
+  const names=students.filter(s=>s.present).map(s=>s.name);
+  document.querySelectorAll('#teams .mem').forEach((el,idx)=>{
+    const real=el.textContent; let n=0; const max=6+Math.floor(idx/2);
+    const h=setInterval(()=>{ el.textContent=pick(names); if(++n>max){ clearInterval(h); el.textContent=real; } },55);
+  });
+}
+$('#teams').addEventListener('click',e=>{
+  const rr=e.target.closest('[data-reroll]');
+  if(rr){ const i=+rr.dataset.reroll; teams[i].task=makeTask($('#cat').value==='none'?'mix':$('#cat').value); renderTeams(false); return; }
+  const m=e.target.closest('.mem'); if(!m) return;
+  const t=+m.dataset.t, j=+m.dataset.m;
+  if(!swapSel){ swapSel=[t,j]; $('#swaphint').classList.add('show'); renderTeams(false); return; }
+  const [t0,j0]=swapSel; swapSel=null; $('#swaphint').classList.remove('show');
+  if(t0!==t){ const a=teams[t0].members[j0]; teams[t0].members[j0]=teams[t].members[j]; teams[t].members[j]=a; }
+  renderTeams(false);
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && swapSel){ swapSel=null; $('#swaphint').classList.remove('show'); renderTeams(false); } });
+
+function commit(){
+  if(committed||!teams.length) return;
+  for(const t of teams){ const g=t.members; for(let i=0;i<g.length;i++) for(let j=i+1;j<g.length;j++){ const k=key(g[i].name,g[j].name); history[k]=(history[k]||0)+1; } }
+  rounds++; committed=true; save(); updateHistInfo();
+}
+function updateHistInfo(){ $('#histInfo').textContent = rounds ? `Bisher ${rounds} Runde${rounds>1?'n':''} gespeichert – bei neuen Auslosungen werden alte Partner gemieden.` : 'Noch kein Verlauf. Er wird gespeichert, sobald ihr zur Bühne geht.'; }
+$('#resetHist').onclick=()=>{ history={}; rounds=0; save(); updateHistInfo(); toast('Verlauf zurückgesetzt'); };
+
+function teamsText(){
+  return teams.map((t,i)=>`${settings.size===2?'Paar':'Gruppe'} ${i+1}: ${t.members.map(p=>p.name).join(' & ')}`+
+    (t.task?`\n   ${t.task.cat}: ${t.task.t}`+(t.task.qs.length?`\n   Fragen: ${t.task.qs.join(' | ')}`:''):'')).join('\n');
+}
+function copy(text,msg){
+  try{ navigator.clipboard.writeText(text).then(()=>toast(msg||'Kopiert'),()=>fallbackCopy(text,msg)); }catch(e){ fallbackCopy(text,msg); }
+}
+function fallbackCopy(text,msg){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); toast(msg||'Kopiert');}catch(e){toast('Kopieren nicht möglich');} ta.remove(); }
+$('#copyTeams').onclick=()=>copy(teamsText(),'Teams kopiert');
+$('#toStage').onclick=()=>go(3);
+
+// ---------- Bühne ----------
+let cur=0, tLeft=60, tRun=null;
+function openStage(){
+  if(!teams.length){ go(2); return; }
+  commit();
+  $('#stage').classList.add('show');
+  cur = Math.max(0, teams.findIndex(t=>!t.done)); if(cur<0) cur=0;
+  renderStage();
+}
+function closeStage(){ $('#stage').classList.remove('show'); stopTimer(); try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){} go(2); }
+function renderStage(){
+  const t=teams[cur];
+  $('#stageTitle').textContent=`${settings.size===2?'Paar':'Gruppe'} ${cur+1} von ${teams.length}`;
+  $('#dots').innerHTML=teams.map((x,i)=>`<button class="dot ${i===cur?'cur':''} ${x.done?'done':''}" data-i="${i}">${i+1}</button>`).join('');
+  $('#stageNames').innerHTML=t.members.map(p=>`<span class="nm ${p.g}">${esc(p.name)}</span>`).join('<span class="amp">&amp;</span>');
+  $('#stageTask').innerHTML = t.task ? `<div class="tt">${esc(t.task.t)}</div>${t.task.d||''}${t.task.qs.length?`<br><ul>${t.task.qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ul>`:''}` : '';
+  const allDone=teams.every(x=>x.done);
+  $('#doneBtn').textContent = allDone ? '🎉 Alle geschafft!' : '✓ Geschafft & weiter';
+  resetTimer();
+}
+$('#dots').addEventListener('click',e=>{ const b=e.target.closest('.dot'); if(b){ cur=+b.dataset.i; renderStage(); } });
+$('#prevBtn').onclick=()=>{ cur=(cur-1+teams.length)%teams.length; renderStage(); };
+$('#nextBtn').onclick=()=>{ cur=(cur+1)%teams.length; renderStage(); };
+$('#doneBtn').onclick=()=>{
+  teams[cur].done=true; burst('👏',8);
+  const nxt=teams.findIndex((t,i)=>!t.done && i>cur), any=teams.findIndex(t=>!t.done);
+  if(nxt>=0) cur=nxt; else if(any>=0) cur=any; else { burst('🎉',24); }
+  renderStage();
+};
+$('#closeStage').onclick=closeStage;
+$('#fsBtn').onclick=()=>{ try{ const s=$('#stage'); document.fullscreenElement?document.exitFullscreen():s.requestFullscreen().catch(()=>toast('Vollbild nicht verfügbar')); }catch(e){ toast('Vollbild nicht verfügbar'); } };
+document.addEventListener('keydown',e=>{
+  if(!$('#stage').classList.contains('show')) return;
+  if(e.key==='ArrowRight') $('#nextBtn').click();
+  if(e.key==='ArrowLeft') $('#prevBtn').click();
+  if(e.key===' '){ e.preventDefault(); $('#tStart').click(); }
+  if(e.key==='Escape' && !document.fullscreenElement) closeStage();
+});
+// Applaus
+$('#applause').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) burst(b.dataset.e,6); });
+function burst(emoji,n){
+  for(let i=0;i<n;i++){ const s=document.createElement('span'); s.className='float'; s.textContent=emoji;
+    s.style.left=(10+Math.random()*80)+'vw'; s.style.top=(70+Math.random()*20)+'vh'; s.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(s); setTimeout(()=>s.remove(),2200); }
+}
+// Timer
+function fmt(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function showTime(){ const el=$('#timer'); el.textContent=fmt(tLeft); el.classList.toggle('low', tLeft<=10); }
+function stopTimer(){ clearInterval(tRun); tRun=null; $('#tStart').textContent='▶ Start'; }
+function resetTimer(){ stopTimer(); tLeft=+$('#timerSel').value; showTime(); }
+$('#timerSel').onchange=resetTimer;
+$('#tReset').onclick=resetTimer;
+let actx=null;
+function beep(){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); [0,.25,.5].forEach(d=>{ const o=actx.createOscillator(), g=actx.createGain(); o.frequency.value=880; o.connect(g); g.connect(actx.destination); g.gain.setValueAtTime(.2,actx.currentTime+d); g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d+.2); o.start(actx.currentTime+d); o.stop(actx.currentTime+d+.22); }); }catch(e){} }
+$('#tStart').onclick=()=>{
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+  if(tRun){ stopTimer(); return; }
+  if(tLeft<=0) tLeft=+$('#timerSel').value;
+  $('#tStart').textContent='⏸ Pause';
+  tRun=setInterval(()=>{ tLeft--; showTime(); if(tLeft<=0){ stopTimer(); beep(); toast('⏰ Zeit ist um!'); } },1000);
+};
+
+renderRoster(); updateHistInfo();
+})();
+</script>
+</body>
+</html>
